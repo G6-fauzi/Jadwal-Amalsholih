@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    
+    <!-- PWA / Add to Home Screen Meta Tags (Untuk menghilangkan URL Bar) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Mengatur warna status bar atas di iPhone (hitam) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <!-- Judul aplikasi saat di layar utama -->
+    <meta name="apple-mobile-web-app-title" content="Shift Malam">
+    
+    <!-- (Opsional) Anda bisa mengganti URL icon ini dengan URL logo/icon sungguhan agar ikon di layar utama tidak blank -->
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Calendar_icon_2.svg/512px-Calendar_icon_2.svg.png">
+
     <title>Jadwal Amalsholih</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -20,7 +33,18 @@
             font-size: 16px !important;
         }
 
-        /* Safe area padding for iPhones with notch/dynamic island */
+        /* PENTING UNTUK PWA IOS: 
+           Ketika aplikasi dibuka dari Home Screen (Standalone mode),
+           kita perlu menambah jarak atas dan bawah untuk area notch/dynamic island
+           dan home indicator agar konten tidak tertutup */
+        @media all and (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top, 20px) !important;
+                padding-bottom: env(safe-area-inset-bottom, 30px) !important;
+            }
+        }
+
+        /* Fallback safe area padding (jika tidak standalone tapi tetap pakai safe area) */
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             body {
                 padding-bottom: env(safe-area-inset-bottom);
@@ -35,7 +59,6 @@
             border: 1px solid rgba(71, 85, 105, 0.4);
         }
 
-        /* Custom Scrollbar for the preview text */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -50,18 +73,13 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #64748b; 
         }
-
-        .tab-btn.active {
-            border-bottom: 2px solid #14b8a6;
-            color: #14b8a6;
-        }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 pb-12 flex flex-col antialiased">
+<body class="min-h-screen p-4 md:p-8 flex flex-col antialiased">
 
     <header class="mb-6 md:mb-8 border-b border-slate-700 pb-4 md:pb-6 pt-2">
         <h1 class="text-2xl md:text-3xl font-bold text-teal-400 mb-1 md:mb-2 tracking-tight">Jadwal Amalsholih</h1>
-        <p class="text-slate-400 text-sm md:text-base"></p>
+        <p class="text-slate-400 text-sm md:text-base">Atur dan kelola shift malam dengan mudah.</p>
     </header>
 
     <div class="flex flex-col lg:flex-row gap-6 md:gap-8 flex-1">
@@ -75,11 +93,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Tanggal Mulai Shift Malam Pertama</label>
-                        <input type="date" id="startDate" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors text-white">
+                        <input type="date" id="startDate" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500 transition-colors text-white text-base">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Jumlah Jadwal Dibuat</label>
-                        <select id="jumlahJadwal" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors">
+                        <select id="jumlahJadwal" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500 transition-colors text-white text-base">
                             <option value="10" selected>10 Putaran (≈ 1 Bulan)</option>
                             <option value="15">15 Putaran</option>
                             <option value="20">20 Putaran</option>
@@ -91,16 +109,16 @@
             <!-- Pengaturan Anggota -->
             <div class="glass-panel rounded-xl p-5 shadow-lg">
                 <h2 class="text-lg font-semibold text-teal-400 mb-4 border-l-4 border-teal-400 pl-2">Data Anggota Shift</h2>
-                <p class="text-[11px] text-slate-400 mb-3">*Urutan nama di bawah menentukan tugas pada hari pertama.</p>
+                <p class="text-[11px] text-slate-400 mb-3">*Urutan nama di bawah menentukan tugas pada hari pertama. Kosongkan nomor 6 jika hanya 5 orang.</p>
 
                 <!-- Panel Shift -->
-                <div id="inputs-shift" class="shift-panel space-y-2">
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">1</span><input type="text" id="member-0" placeholder="Anggota ke-1" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">2</span><input type="text" id="member-1" placeholder="Anggota ke-2" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">3</span><input type="text" id="member-2" placeholder="Anggota ke-3" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">4</span><input type="text" id="member-3" placeholder="Anggota ke-4" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">5</span><input type="text" id="member-4" placeholder="Anggota ke-5" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">6</span><input type="text" id="member-5" value="" placeholder="Anggota ke-6 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                <div id="inputs-shift" class="shift-panel space-y-3">
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">1</span><input type="text" id="member-0" value="Bp Azdullah" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">2</span><input type="text" id="member-1" value="Bp Amar" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">3</span><input type="text" id="member-2" value="Fauzi Kurniawan" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">4</span><input type="text" id="member-3" value="Bp Arvin" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">5</span><input type="text" id="member-4" value="Pak Ahmad" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">6</span><input type="text" id="member-5" value="" placeholder="Anggota ke-6 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
                 </div>
             </div>
 
@@ -175,7 +193,7 @@
             let members = [];
             for(let i=0; i<6; i++) {
                 let val = document.getElementById(`member-${i}`).value;
-                members.push(val); // Save all, including empty ones, for localStorage mapping
+                members.push(val); 
             }
             return members;
         }
@@ -206,16 +224,15 @@
                         document.getElementById(`member-${i}`).value = data.members[i];
                     }
                 }
-                return true; // Berhasil dimuat
+                return true; 
             }
-            return false; // Tidak ada data tersimpan
+            return false; 
         }
 
         function resetData() {
             if(confirm("Apakah Anda yakin ingin menghapus jadwal dan mereset form ke setelan awal?")) {
                 localStorage.removeItem('shift_jadwal_data');
                 
-                // Reset to default
                 setDefaultDate();
                 document.getElementById('jumlahJadwal').value = "10";
                 
@@ -226,9 +243,8 @@
                 document.getElementById('member-4').value = "Pak Ahmad";
                 document.getElementById('member-5').value = "";
                 
-                // Clear calendar
                 document.getElementById('scheduleContainer').innerHTML = `
-                    <div class="flex items-center justify-center col-span-full h-40 border-2 border-dashed border-slate-700 rounded-xl text-slate-500" id="emptyState">
+                    <div class="flex items-center justify-center col-span-full h-40 border-2 border-dashed border-slate-700 rounded-xl text-slate-500 text-center px-4" id="emptyState">
                         Belum ada jadwal. Silakan klik "Generate Jadwal" di menu sebelah kiri.
                     </div>
                 `;
@@ -236,7 +252,6 @@
                 fullScheduleData = [];
             }
         }
-        // ----------------------------------------
 
         function setDefaultDate() {
             const today = new Date();
@@ -278,7 +293,7 @@
                 if (N >= 5) {
                     let computedRoles = new Array(N);
                     for(let i = 0; i < N; i++) {
-                        let r = (i + k) % N; // Menghitung indeks pergeseran tugas berurutan
+                        let r = (i + k) % N; 
                         computedRoles[r] = members[i];
                     }
 
@@ -311,7 +326,6 @@
                 
                 fullScheduleData.push(dayData);
 
-                // Buat Card UI
                 let card = document.createElement('div');
                 card.className = "glass-panel rounded-xl p-5 border border-teal-900 shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:border-teal-500 transition-colors flex flex-col justify-between";
                 
@@ -360,11 +374,9 @@
                 
                 container.appendChild(card);
 
-                // Tambah 3 hari untuk shift malam putaran berikutnya
                 currentDate.setDate(currentDate.getDate() + 3);
             }
 
-            // Simpan konfigurasi agar tidak hilang saat di-refresh
             saveData();
         }
 
@@ -405,7 +417,6 @@ _*Kerjakan karna Allah semoga Allah paring aman slamet lancar barokah*_ 🙏🏻
             document.getElementById('templatePreviewText').innerText = text;
             document.getElementById('modalDateTitle').innerText = `Jadwal Shift Malam`;
             
-            // Show modal with animation
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
@@ -461,16 +472,12 @@ _*Kerjakan karna Allah semoga Allah paring aman slamet lancar barokah*_ 🙏🏻
             document.body.removeChild(textArea);
         }
 
-        // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
-            // Coba muat data dari LocalStorage
             const dataExists = loadData();
             
             if (dataExists) {
-                // Jika ada data tersimpan, langsung generate
                 generateSchedule();
             } else {
-                // Jika tidak ada data tersimpan, set default date hari ini
                 setDefaultDate();
             }
         });
