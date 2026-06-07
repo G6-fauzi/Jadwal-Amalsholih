@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Amalsholih</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+        }
+
+        /* Custom Scrollbar for the preview text */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #14b8a6;
+            color: #14b8a6;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col">
+
+    <header class="mb-8 border-b border-slate-700 pb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-teal-400 mb-2">Jadwal Amalsholih</h1>
+        <p class="text-slate-400 text-sm md:text-base"></p>
+    </header>
+
+    <div class="flex flex-col lg:flex-row gap-8 flex-1">
+        <!-- Sidebar Konfigurasi -->
+        <aside class="w-full lg:w-96 flex flex-col gap-6">
+            
+            <!-- Pengaturan Waktu -->
+            <div class="glass-panel rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-semibold text-teal-400 mb-4 border-l-4 border-teal-400 pl-2">Konfigurasi Waktu</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Tanggal Mulai Shift Malam Pertama</label>
+                        <input type="date" id="startDate" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Jumlah Jadwal Dibuat</label>
+                        <select id="jumlahJadwal" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors">
+                            <option value="10" selected>10 Putaran (≈ 1 Bulan)</option>
+                            <option value="15">15 Putaran</option>
+                            <option value="20">20 Putaran</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pengaturan Anggota -->
+            <div class="glass-panel rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-semibold text-teal-400 mb-4 border-l-4 border-teal-400 pl-2">Data Anggota Shift</h2>
+                <p class="text-[11px] text-slate-400 mb-3">*Urutan nama di bawah menentukan tugas pada hari pertama.</p>
+
+                <!-- Panel Shift -->
+                <div id="inputs-shift" class="shift-panel space-y-2">
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">1</span><input type="text" id="member-0" placeholder="Anggota ke-1" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">2</span><input type="text" id="member-1" placeholder="Anggota ke-2" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">3</span><input type="text" id="member-2" placeholder="Anggota ke-3" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">4</span><input type="text" id="member-3" placeholder="Anggota ke-4" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">5</span><input type="text" id="member-4" placeholder="Anggota ke-5" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">6</span><input type="text" id="member-5" value="" placeholder="Anggota ke-6 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm focus:border-teal-500 outline-none"></div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="generateSchedule()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-teal-500/30 transition-all transform hover:scale-[1.02] active:scale-95">
+                    Generate Jadwal
+                </button>
+                <button onclick="resetData()" class="bg-rose-900/80 hover:bg-rose-600 border border-rose-800 hover:border-rose-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95" title="Hapus Semua Data & Reset">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="calendarTitle" class="text-xl font-semibold text-slate-100">Jadwal Shift Malam</h2>
+            </div>
+            
+            <div id="scheduleContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-10">
+                <!-- Cards will be generated here -->
+                <div class="flex items-center justify-center col-span-full h-40 border-2 border-dashed border-slate-700 rounded-xl text-slate-500" id="emptyState">
+                    Belum ada jadwal. Silakan klik "Generate Jadwal" di menu sebelah kiri.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal WhatsApp Preview -->
+    <div id="waModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-600 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300" id="waModalContent">
+            
+            <div class="flex justify-between items-center p-5 border-b border-slate-700">
+                <h3 class="font-semibold text-lg text-teal-400" id="modalDateTitle">Template WhatsApp</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-1 bg-[url('https://i.pinimg.com/originals/8c/98/99/8c98994518b575bfd8c949e91d20548b.jpg')] bg-cover bg-center relative">
+                <!-- Dark overlay for WA background -->
+                <div class="absolute inset-0 bg-slate-900/80"></div>
+                
+                <!-- Chat Bubble -->
+                <div class="relative bg-[#005c4b] text-[#e9edef] p-3 rounded-lg rounded-tl-none shadow-sm text-[14px] leading-relaxed font-sans w-[90%] break-words">
+                    <pre id="templatePreviewText" class="whitespace-pre-wrap font-sans m-0"></pre>
+                    <div class="text-[11px] text-[#8696a0] text-right mt-1">Hari ini</div>
+                </div>
+            </div>
+            
+            <div class="p-5 border-t border-slate-700 flex gap-3">
+                <button onclick="copyTemplateText()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Salin Teks
+                </button>
+                <button onclick="closeModal()" class="px-4 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-teal-500 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        Teks berhasil disalin!
+    </div>
+
+    <script>
+        const dayNames = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUM'AT", "SABTU"];
+        let fullScheduleData = [];
+
+        function getShiftMembers() {
+            let members = [];
+            for(let i=0; i<6; i++) {
+                let val = document.getElementById(`member-${i}`).value;
+                members.push(val); // Save all, including empty ones, for localStorage mapping
+            }
+            return members;
+        }
+        
+        function getActiveMembers() {
+            return getShiftMembers().map(m => m.trim()).filter(m => m !== "");
+        }
+
+        // --- Fitur Simpan Data (Local Storage) ---
+        function saveData() {
+            const startDate = document.getElementById('startDate').value;
+            const jumlahJadwal = document.getElementById('jumlahJadwal').value;
+            const members = getShiftMembers();
+            
+            const dataToSave = { startDate, jumlahJadwal, members };
+            localStorage.setItem('shift_jadwal_data', JSON.stringify(dataToSave));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('shift_jadwal_data');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                document.getElementById('startDate').value = data.startDate;
+                document.getElementById('jumlahJadwal').value = data.jumlahJadwal;
+                
+                for(let i=0; i<6; i++) {
+                    if(data.members[i] !== undefined) {
+                        document.getElementById(`member-${i}`).value = data.members[i];
+                    }
+                }
+                return true; // Berhasil dimuat
+            }
+            return false; // Tidak ada data tersimpan
+        }
+
+        function resetData() {
+            if(confirm("Apakah Anda yakin ingin menghapus jadwal dan mereset form ke setelan awal?")) {
+                localStorage.removeItem('shift_jadwal_data');
+                
+                // Reset to default
+                setDefaultDate();
+                document.getElementById('jumlahJadwal').value = "10";
+                
+                document.getElementById('member-0').value = "Bp Azdullah";
+                document.getElementById('member-1').value = "Bp Amar";
+                document.getElementById('member-2').value = "Fauzi Kurniawan";
+                document.getElementById('member-3').value = "Bp Arvin";
+                document.getElementById('member-4').value = "Pak Ahmad";
+                document.getElementById('member-5').value = "";
+                
+                // Clear calendar
+                document.getElementById('scheduleContainer').innerHTML = `
+                    <div class="flex items-center justify-center col-span-full h-40 border-2 border-dashed border-slate-700 rounded-xl text-slate-500" id="emptyState">
+                        Belum ada jadwal. Silakan klik "Generate Jadwal" di menu sebelah kiri.
+                    </div>
+                `;
+                document.getElementById('calendarTitle').innerText = 'Jadwal Shift Malam';
+                fullScheduleData = [];
+            }
+        }
+        // ----------------------------------------
+
+        function setDefaultDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('startDate').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function generateSchedule() {
+            const startDateInput = document.getElementById('startDate').value;
+            const jumlahJadwal = parseInt(document.getElementById('jumlahJadwal').value);
+            
+            if(!startDateInput) {
+                alert("Silakan pilih tanggal mulai terlebih dahulu!");
+                return;
+            }
+
+            const startDate = new Date(startDateInput);
+            document.getElementById('calendarTitle').innerText = `Jadwal Shift Malam (${jumlahJadwal} Putaran)`;
+
+            const members = getActiveMembers();
+            const container = document.getElementById('scheduleContainer');
+            container.innerHTML = '';
+            fullScheduleData = [];
+
+            let currentDate = new Date(startDate);
+            let N = members.length;
+
+            for (let k = 0; k < jumlahJadwal; k++) {
+                let dayName = dayNames[currentDate.getDay()];
+                let day = currentDate.getDate();
+                let month = currentDate.getMonth();
+                let year = currentDate.getFullYear();
+                
+                let assignments = {};
+                let liburPerson = "";
+
+                if (N >= 5) {
+                    let computedRoles = new Array(N);
+                    for(let i = 0; i < N; i++) {
+                        let r = (i + k) % N; // Menghitung indeks pergeseran tugas berurutan
+                        computedRoles[r] = members[i];
+                    }
+
+                    assignments = {
+                        dapur: computedRoles[0] || "-",
+                        lauk1: computedRoles[1] || "-",
+                        lauk2: computedRoles[2] || "-",
+                        lpgSiang: computedRoles[3] || "-",
+                        lpgPagi: computedRoles[4] || "-"
+                    };
+                    
+                    if (N === 6) {
+                        liburPerson = computedRoles[5] || "";
+                    }
+                } else {
+                    assignments = { dapur: "⚠️ Kurang Orang", lauk1: "-", lauk2: "-", lpgSiang: "-", lpgPagi: "-" };
+                }
+
+                let dayStr = day < 10 ? '0' + day : day;
+                let monthStr = (month + 1) < 10 ? '0' + (month + 1) : (month + 1);
+                let formattedDate = `${dayStr}/${monthStr}/${year}`;
+
+                let dayData = {
+                    dayName: dayName,
+                    dateStr: formattedDate,
+                    assignments: assignments,
+                    libur: liburPerson,
+                    index: fullScheduleData.length
+                };
+                
+                fullScheduleData.push(dayData);
+
+                // Buat Card UI
+                let card = document.createElement('div');
+                card.className = "glass-panel rounded-xl p-5 border border-teal-900 shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:border-teal-500 transition-colors flex flex-col justify-between";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white">${dayName}</h3>
+                                <p class="text-xs text-teal-400 font-mono">${formattedDate}</p>
+                            </div>
+                            <span class="bg-teal-900/50 text-teal-300 border border-teal-800 text-xs font-bold px-2.5 py-1 rounded-md">
+                                SHIFT MALAM
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2.5 text-[13px]">
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
+                                <span class="text-slate-400">🍚 Dapur</span>
+                                <span class="font-medium text-slate-100">${assignments.dapur}</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
+                                <span class="text-slate-400">🍗 Lauk (2 Org)</span>
+                                <span class="font-medium text-slate-100 text-right">${assignments.lauk1} & ${assignments.lauk2}</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
+                                <span class="text-slate-400">🏺 LPG Siang</span>
+                                <span class="font-medium text-slate-100">${assignments.lpgSiang}</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
+                                <span class="text-slate-400">🏺 LPG Pagi</span>
+                                <span class="font-medium text-slate-100">${assignments.lpgPagi}</span>
+                            </div>
+                            ${liburPerson ? `
+                            <div class="flex justify-between items-center border-b border-rose-900/30 pb-1.5">
+                                <span class="text-rose-400">💤 Libur (Off)</span>
+                                <span class="font-medium text-rose-300">${liburPerson}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <button onclick="viewTemplate(${dayData.index})" class="w-full mt-5 bg-slate-800 hover:bg-slate-700 text-teal-400 border border-slate-600 font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        Pesan WhatsApp
+                    </button>
+                `;
+                
+                container.appendChild(card);
+
+                // Tambah 3 hari untuk shift malam putaran berikutnya
+                currentDate.setDate(currentDate.getDate() + 3);
+            }
+
+            // Simpan konfigurasi agar tidak hilang saat di-refresh
+            saveData();
+        }
+
+        function generateWATemplateText(data) {
+            return `_Assalamualaikum Wr.Wb_
+*_INFO - INFO NGGEEH..🙌🏼_*
+
+Jadwal Amalsholih
+📅 *${data.dayName} : ${data.dateStr}* 🍚 •Masak Nasi & Bersih Dapur :    
+        ${data.assignments.dapur}
+
+🍗• Ambil lauk ☀️. 🌑:
+      ${data.assignments.lauk1}  & ${data.assignments.lauk2} 
+    
+ 🏺• Trobosan LPG pagi : 
+        ${data.assignments.lpgPagi} 
+
+🏺• Trobosan LPG Siang :
+        ${data.assignments.lpgSiang} 
+${data.libur ? `\n💤• Jatah Libur Malam Ini :\n        ${data.libur}\n` : ''}
+*NB*
+- *Jika ada udzur/tuker piket amalsholih konfirmasi kaleh rencange*☝🏻👌🏻
+
+
+_*Kerjakan karna Allah semoga Allah paring aman slamet lancar barokah*_ 🙏🏻
+
+الحمدلله جزا كم الله خيرا`;
+        }
+
+        const modal = document.getElementById('waModal');
+        const modalContent = document.getElementById('waModalContent');
+
+        function viewTemplate(index) {
+            let data = fullScheduleData[index];
+            if(!data) return;
+            
+            let text = generateWATemplateText(data);
+            document.getElementById('templatePreviewText').innerText = text;
+            document.getElementById('modalDateTitle').innerText = `Jadwal Shift Malam`;
+            
+            // Show modal with animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function copyTemplateText() {
+            let text = document.getElementById('templatePreviewText').innerText;
+            
+            let textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                let successful = document.execCommand('copy');
+                if(successful) {
+                    showToast();
+                } else {
+                    console.error('Fallback: Gagal menyalin teks');
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, tidak dapat menyalin', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Coba muat data dari LocalStorage
+            const dataExists = loadData();
+            
+            if (dataExists) {
+                // Jika ada data tersimpan, langsung generate
+                generateSchedule();
+            } else {
+                // Jika tidak ada data tersimpan, set default date hari ini
+                setDefaultDate();
+            }
+        });
+    </script>
+</body>
+</html>
