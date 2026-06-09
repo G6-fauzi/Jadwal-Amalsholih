@@ -109,7 +109,7 @@
             <!-- Pengaturan Anggota -->
             <div class="glass-panel rounded-xl p-5 shadow-lg">
                 <h2 class="text-lg font-semibold text-teal-400 mb-4 border-l-4 border-teal-400 pl-2">Data Anggota Shift</h2>
-                <p class="text-[11px] text-slate-400 mb-3">*Urutan nama di bawah menentukan tugas pada hari pertama. Kosongkan nomor 6 jika hanya 5 orang.</p>
+                <p class="text-[11px] text-slate-400 mb-3">*Urutan nama di bawah menentukan tugas pada hari pertama. Kosongkan nomor yang tidak perlu jika kurang dari 6 orang.</p>
 
                 <!-- Panel Shift -->
                 <div id="inputs-shift" class="shift-panel space-y-3">
@@ -117,8 +117,8 @@
                     <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">2</span><input type="text" id="member-1" value="" placeholder="Anggota 2" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
                     <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">3</span><input type="text" id="member-2" value="" placeholder="Anggota 3" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
                     <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">4</span><input type="text" id="member-3" value="" placeholder="Anggota 4" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">5</span><input type="text" id="member-4" value="" placeholder="Anggota 5" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
-                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">6</span><input type="text" id="member-5" value="" placeholder="Anggota ke-6 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">5</span><input type="text" id="member-4" value="" placeholder="Anggota 5 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
+                    <div class="flex items-center gap-2"><span class="w-4 text-xs text-slate-500">6</span><input type="text" id="member-5" value="" placeholder="Anggota 6 (Opsional)" class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:border-teal-500 outline-none text-white text-base"></div>
                 </div>
             </div>
 
@@ -281,6 +281,16 @@
             let currentDate = new Date(startDate);
             let N = members.length;
 
+            // Jika anggota kurang dari 4, tampilkan peringatan
+            if (N < 4 && N > 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center col-span-full h-40 border-2 border-dashed border-rose-700/50 rounded-xl text-rose-500 text-center px-4" id="emptyState">
+                        Minimal harus ada 4 anggota untuk membuat jadwal shift.
+                    </div>
+                `;
+                return;
+            }
+
             for (let k = 0; k < jumlahJadwal; k++) {
                 let dayName = dayNames[currentDate.getDay()];
                 let day = currentDate.getDate();
@@ -289,21 +299,35 @@
                 
                 let assignments = {};
                 let liburPerson = "";
+                let isLaukSatuOrang = false;
 
-                if (N >= 5) {
+                if (N >= 4) {
                     let computedRoles = new Array(N);
                     for(let i = 0; i < N; i++) {
                         let r = (i + k) % N; 
                         computedRoles[r] = members[i];
                     }
 
-                    assignments = {
-                        dapur: computedRoles[0] || "-",
-                        lauk1: computedRoles[1] || "-",
-                        lauk2: computedRoles[2] || "-",
-                        lpgSiang: computedRoles[3] || "-",
-                        lpgPagi: computedRoles[4] || "-"
-                    };
+                    if (N === 4) {
+                        // Jika 4 orang, ambil lauk hanya 1 orang
+                        isLaukSatuOrang = true;
+                        assignments = {
+                            dapur: computedRoles[0] || "-",
+                            lauk1: computedRoles[1] || "-",
+                            lauk2: "", // Kosongkan lauk 2
+                            lpgSiang: computedRoles[2] || "-",
+                            lpgPagi: computedRoles[3] || "-"
+                        };
+                    } else {
+                        // Jika 5 atau 6 orang, ambil lauk 2 orang
+                        assignments = {
+                            dapur: computedRoles[0] || "-",
+                            lauk1: computedRoles[1] || "-",
+                            lauk2: computedRoles[2] || "-",
+                            lpgSiang: computedRoles[3] || "-",
+                            lpgPagi: computedRoles[4] || "-"
+                        };
+                    }
                     
                     if (N === 6) {
                         liburPerson = computedRoles[5] || "";
@@ -321,6 +345,7 @@
                     dateStr: formattedDate,
                     assignments: assignments,
                     libur: liburPerson,
+                    isLaukSatuOrang: isLaukSatuOrang, // Simpan status lauk untuk template WA
                     index: fullScheduleData.length
                 };
                 
@@ -329,6 +354,12 @@
                 let card = document.createElement('div');
                 card.className = "glass-panel rounded-xl p-5 border border-teal-900 shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:border-teal-500 transition-colors flex flex-col justify-between";
                 
+                let laukDisplay = isLaukSatuOrang ? 
+                    `<span class="font-medium text-slate-100">${assignments.lauk1}</span>` : 
+                    `<span class="font-medium text-slate-100 text-right">${assignments.lauk1} & ${assignments.lauk2}</span>`;
+
+                let laukLabel = isLaukSatuOrang ? "🍗 Lauk (1 Org)" : "🍗 Lauk (2 Org)";
+
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-4">
@@ -347,8 +378,8 @@
                                 <span class="font-medium text-slate-100">${assignments.dapur}</span>
                             </div>
                             <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
-                                <span class="text-slate-400">🍗 Lauk (2 Org)</span>
-                                <span class="font-medium text-slate-100 text-right">${assignments.lauk1} & ${assignments.lauk2}</span>
+                                <span class="text-slate-400">${laukLabel}</span>
+                                ${laukDisplay}
                             </div>
                             <div class="flex justify-between items-center border-b border-slate-700/50 pb-1.5">
                                 <span class="text-slate-400">🏺 LPG Siang</span>
@@ -381,6 +412,10 @@
         }
 
         function generateWATemplateText(data) {
+            let laukText = data.isLaukSatuOrang ? 
+                `      ${data.assignments.lauk1}` : 
+                `      ${data.assignments.lauk1}  & ${data.assignments.lauk2}`;
+
             return `_Assalamualaikum Wr.Wb_
 *_INFO - INFO NGGEEH..🙌🏼_*
 
@@ -389,7 +424,7 @@ Jadwal Amalsholih
         ${data.assignments.dapur}
 
 🍗• Ambil lauk ☀️. 🌑:
-      ${data.assignments.lauk1}  & ${data.assignments.lauk2} 
+${laukText} 
     
  🏺• Trobosan LPG pagi : 
         ${data.assignments.lpgPagi} 
@@ -484,3 +519,4 @@ _*Kerjakan karna Allah semoga Allah paring aman slamet lancar barokah*_ 🙏🏻
     </script>
 </body>
 </html>
+
